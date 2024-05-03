@@ -5,6 +5,7 @@ import (
 	"html/template" // New import
 	"log"           // New import
 	"net/http"
+	"snippetbox/pkg/models"
 	"strconv"
 )
 
@@ -41,7 +42,18 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+
+	s, err := app.snippets.Get(id)
+
+	if err == models.ErrNoRecord {
+		app.notFound(w)
+		return
+	} else if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	fmt.Fprintf(w, "%v", s)
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +65,7 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 
 	title := "O snail"
 	content := "O snail Climb Mount Fuji, But slowly, slowly! – Kobayashi Issa"
-	expires := "7"
+	expires := 7
 
 	id, err := app.snippets.Insert(title, content, expires)
 
