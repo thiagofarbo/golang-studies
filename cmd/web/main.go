@@ -7,12 +7,12 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"snippetbox/pkg/models/mysql"
+	"snippetbox/internal/models"
 )
 
 type application struct {
 	logger   *slog.Logger
-	snippets *mysql.SnippetModel
+	snippets *models.SnippetModel
 }
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 
 	app := &application{
 		logger:   logger,
-		snippets: &mysql.SnippetModel{DB: db},
+		snippets: &models.SnippetModel{DB: db},
 	}
 
 	mux := http.NewServeMux()

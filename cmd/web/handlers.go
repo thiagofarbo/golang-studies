@@ -5,7 +5,7 @@ import (
 	"html/template" // New import
 	"log"           // New import
 	"net/http"
-	"snippetbox/pkg/models"
+	"snippetbox/internal/models"
 	"strconv"
 )
 
