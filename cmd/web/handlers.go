@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"html/template" // New import
-	"log"           // New import
+
 	"net/http"
 	"snippetbox/internal/models"
 	"strconv"
@@ -15,25 +14,36 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// home.page.tmpl file must be the *first* file in the slice.
-	files := []string{
-		"./ui/html/home.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-	ts, err := template.ParseFiles(files...)
+	s, err := app.snippets.Latest()
 
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
+		app.serverError(w, r, err)
 		return
 	}
 
-	err = ts.Execute(w, nil)
-	if err != nil {
-		app.logger.Error(err.Error())
-		http.Error(w, "Internal Server Error", 500)
+	for _, snippet := range s {
+		fmt.Fprintf(w, "v\n", snippet)
 	}
+
+	// home.page.tmpl file must be the *first* file in the slice.
+	//files := []string{
+	//	"./ui/html/home.page.tmpl",
+	//	"./ui/html/base.layout.tmpl",
+	//	"./ui/html/footer.partial.tmpl",
+	//}
+	//ts, err := template.ParseFiles(files...)
+	//
+	//if err != nil {
+	//	log.Println(err.Error())
+	//	http.Error(w, "Internal Server Error", 500)
+	//	return
+	//}
+	//
+	//err = ts.Execute(w, nil)
+	//if err != nil {
+	//	app.logger.Error(err.Error())
+	//	http.Error(w, "Internal Server Error", 500)
+	//}
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
