@@ -33,21 +33,21 @@ func (m *SnippetModel) Insert(title string, content string, expires int) (int, e
 	return int(id), nil
 }
 
-func (m *SnippetModel) Get(id int) (Snippet, error) {
+func (m *SnippetModel) Get(id int) (*Snippet, error) {
 
 	stmt := `select id, title, content, created, expires FROM snippets WHERE expires > UTC_TIMESTAMP() AND id = ?`
 
 	row := m.DB.QueryRow(stmt, id)
 
-	var s Snippet
+	s := &Snippet{}
 	//Pointers
 	err := row.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return Snippet{}, ErrNoRecord
+			return &Snippet{}, ErrNoRecord
 		} else {
-			return Snippet{}, nil
+			return &Snippet{}, err
 		}
 	}
 	return s, nil

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-
+	"html/template"
 	"net/http"
 	"snippetbox/internal/models"
 	"strconv"
@@ -10,40 +10,38 @@ import (
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
-
 	s, err := app.snippets.Latest()
-
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
 
-	for _, snippet := range s {
-		fmt.Fprintf(w, "v\n", snippet)
+	data := &templateData{
+		Snippets: s,
 	}
 
-	// home.page.tmpl file must be the *first* file in the slice.
-	//files := []string{
-	//	"./ui/html/home.page.tmpl",
-	//	"./ui/html/base.layout.tmpl",
-	//	"./ui/html/footer.partial.tmpl",
-	//}
-	//ts, err := template.ParseFiles(files...)
-	//
-	//if err != nil {
-	//	log.Println(err.Error())
-	//	http.Error(w, "Internal Server Error", 500)
-	//	return
-	//}
-	//
-	//err = ts.Execute(w, nil)
-	//if err != nil {
-	//	app.logger.Error(err.Error())
-	//	http.Error(w, "Internal Server Error", 500)
-	//}
+	files := []string{
+		"./ui/html/home.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+	// Pass in the templateData struct when executing the template.
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+
+	//// Use the new render helper.
+	//app.render(w, r, "home.page.tmpl", data)
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
@@ -61,6 +59,27 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		app.serverError(w, r, err)
 		return
+	}
+
+	files := []string{
+		"./ui/html/show.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	data := &templateData{
+		Snippet: s,
+	}
+
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, r, err)
 	}
 
 	fmt.Fprintf(w, "%v", s)
